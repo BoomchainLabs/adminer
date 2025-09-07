@@ -271,7 +271,7 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 				$val = idx($where[$key], "val");
 				echo (like_bool($field)
 					? "<select name='where[$i][val]'>" . optionlist(array("" => "", lang('no'), lang('yes')), $val, true) . "</select>"
-					: enum_input("checkbox", " name='where[$i][val][]'", $field, (array) $val, ($field["null"] ? 0 : null))
+					: enum_input("checkbox", " name='where[$i][val][]'", $field, (array) $val, lang('empty'))
 				);
 				echo "</div>\n";
 				unset($columns[$name]);
@@ -460,7 +460,7 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 	function editInput($table, $field, $attrs, $value) {
 		if ($field["type"] == "enum") {
 			return (isset($_GET["select"]) ? "<label><input type='radio'$attrs value='-1' checked><i>" . lang('original') . "</i></label> " : "")
-				. enum_input("radio", $attrs, $field, ($value || isset($_GET["select"]) ? $value : ""), ($field["null"] ? "" : null))
+				. enum_input("radio", $attrs, $field, ($value === false ? [] : $value), lang('empty'))
 			;
 		}
 		$options = $this->foreignKeyOptions($table, $field["field"], $value);
@@ -507,7 +507,7 @@ ORDER BY ORDINAL_POSITION", null, "") as $row
 		$return = q($return);
 		if ($value == "" && like_bool($field)) {
 			$return = "'0'";
-		} elseif ($value == "" && ($field["null"] || !preg_match('~char|text~', $field["type"]))) {
+		} elseif ($value == "" && ($field["null"] || !preg_match('~char|text|enum~', $field["type"]))) {
 			$return = "NULL";
 		} elseif (preg_match('~^(md5|sha1)$~', $function)) {
 			$return = "$function($return)";

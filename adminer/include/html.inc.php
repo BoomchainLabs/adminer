@@ -179,14 +179,15 @@ function hidden_fields_get(): void {
 /** Print enum or set input field
 * @param 'radio'|'checkbox' $type
 * @param Field $field
-* @param mixed $value string|array
+* @param string|string[]|null $value
 */
-function enum_input(string $type, string $attrs, array $field, $value, ?string $empty = null): string {
+function enum_input(string $type, string $attrs, array $field, $value, string $empty): string {
 	preg_match_all("~'((?:[^']|'')*)'~", $field["length"], $matches);
-	$return = ($empty !== null ? "<label><input type='$type'$attrs value='$empty'" . ((is_array($value) ? in_array($empty, $value) : $value === $empty) ? " checked" : "") . "><i>" . lang('empty') . "</i></label>" : "");
+	$is_null = (is_array($value) ? in_array(0, $value) : !$value);
+	$return = ($field["null"] ? "<label><input type='$type'$attrs value='0'" . ($is_null ? " checked" : "") . "><i>$empty</i></label>" : "");
 	foreach ($matches[1] as $i => $val) {
 		$val = stripcslashes(str_replace("''", "'", $val));
-		$checked = (is_array($value) ? in_array($val, $value) : $value === $val);
+		$checked = (is_array($value) ? in_array($val, $value, true) : $value === $val);
 		$return .= " <label><input type='$type'$attrs value='" . h($val) . "'" . ($checked ? ' checked' : '') . '>' . h(adminer()->editVal($val, $field)) . '</label>';
 	}
 	return $return;
@@ -300,7 +301,7 @@ function process_input(array $field) {
 		if ($value == -1) {
 			return false;
 		}
-		if ($value == "") {
+		if ($value == "0") {
 			return "NULL";
 		}
 	}
